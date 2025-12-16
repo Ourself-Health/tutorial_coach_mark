@@ -5,12 +5,12 @@ import 'package:tutorial_coach_mark/src/target/target_position.dart';
 /// Defines the shape of the focus highlight around target widgets.
 enum ShapeLightFocus {
   /// Circular highlight shape
-// ignore: constant_identifier_names
+  // ignore: constant_identifier_names
   Circle,
 
   /// Rounded rectangle highlight shape
-// ignore: constant_identifier_names
-  RRect
+  // ignore: constant_identifier_names
+  RRect,
 }
 
 /// Gets the current position and size of a target widget.
@@ -58,7 +58,7 @@ TargetPosition? getTargetCurrent(
 
       return TargetPosition(size, offset);
     } catch (e) {
-      throw NotFoundTargetException(target.identify);
+      return target.targetPosition;
     }
   } else {
     return target.targetPosition;
@@ -104,7 +104,7 @@ extension StateExt on State {
 /// - The widget's render object is not available
 class NotFoundTargetException extends FormatException {
   NotFoundTargetException(identify)
-      : super('It was not possible to obtain target position ($identify).');
+    : super('It was not possible to obtain target position ($identify).');
 }
 
 /// Schedules a callback to run after the current frame.
