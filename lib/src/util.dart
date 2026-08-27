@@ -30,19 +30,25 @@ TargetPosition? getTargetCurrent(
 }) {
   if (target.keyTarget != null) {
     var key = target.keyTarget!;
+    final keyContext = key.currentContext;
+    if (keyContext == null) {
+      // The widget is no longer in the tree (removed, conditional render,
+      // scrolled out of a lazy list, etc.). Report it as a regular
+      // NotFoundTargetException instead of crashing with a null-check error.
+      throw NotFoundTargetException(target.identify);
+    }
 
     try {
-      final RenderBox renderBoxRed =
-          key.currentContext!.findRenderObject() as RenderBox;
+      final RenderBox renderBoxRed = keyContext.findRenderObject() as RenderBox;
       final size = renderBoxRed.size;
 
       BuildContext? context;
       if (rootOverlay) {
-        context = key.currentContext!
+        context = keyContext
             .findRootAncestorStateOfType<OverlayState>()
             ?.context;
       } else {
-        context = key.currentContext!
+        context = keyContext
             .findAncestorStateOfType<NavigatorState>()
             ?.context;
       }
