@@ -1,3 +1,10 @@
+# next
+- Fix: `next()`/`finish()` no longer waits for the pulse animation to end before playing the unfocus animation. [#235](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/235)
+- Fix: rapid taps on the overlay or target no longer skip multiple steps. [#175](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/175) [#183](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/183)
+- Fix: the tutorial no longer aborts when a target cannot be found (conditional widgets, targets removed after a tap, scrolled off-screen). It now skips to the next available target and only finishes when none remain. [#218](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/218) [#223](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/223) [#199](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/199)
+- Fix: `onClickTarget` callbacks are deferred one microtask so Navigator operations (`push`, `pop`, `pushReplacement`) no longer run while the navigator is locked. [#219](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/219)
+- Hardening: `getTargetCurrent` reports a missing target context as `NotFoundTargetException` (handled) instead of crashing with a null-check error.
+
 # 1.3.3
 - Fix: Custom skipWidget not triggering tutorial skip action #222
 - Inline documentation, enable rebuilding on screen resize #226
