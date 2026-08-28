@@ -173,11 +173,17 @@ class TutorialCoachMarkWidgetState extends State<TutorialCoachMarkWidget>
         rootOverlay: widget.rootOverlay,
       );
     } on NotFoundTargetException catch (e) {
-      skip();
-
-      ///error tutorial exit
       debugPrint("  error>>>>> e ${e.toString()}");
-      //debugPrintStack(stackTrace: s);
+
+      // The current target is not (or is no longer) available — e.g. it was
+      // removed by the app after a tap, rendered conditionally, or scrolled
+      // off-screen. Skip to the next available target instead of aborting
+      // the whole tutorial (#218, #223, #199).
+      postFrame(() {
+        if (mounted) {
+          _focusLightKey.currentState?.skipToNextAvailable();
+        }
+      });
     }
 
     if (target == null) {

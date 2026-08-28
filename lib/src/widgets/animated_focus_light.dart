@@ -172,8 +172,15 @@ abstract class AnimatedFocusLightState extends State<AnimatedFocusLight>
     bool overlayTap = false,
   }) async {
     if (_isAnimating) return;
+    // Guard synchronously BEFORE any await: rapid taps must not advance
+    // multiple steps while the user callback is still running (#175, #183).
+    _isAnimating = true;
     nextIndex++;
     if (targetTap) {
+      // Defer so Navigator operations (push/pop/pushReplacement) inside the
+      // callback do not run while the navigator is locked (e.g. during a
+      // route transition), which throws a _debugLocked assertion (#219).
+      await Future<void>.delayed(Duration.zero);
       await widget.clickTarget?.call(_targetFocus);
     }
     if (overlayTap) {
@@ -209,7 +216,7 @@ abstract class AnimatedFocusLightState extends State<AnimatedFocusLight>
     }
 
     if (targetPosition == null) {
-      _finish();
+      skipToNextAvailable();
       return;
     }
 
@@ -241,9 +248,41 @@ abstract class AnimatedFocusLightState extends State<AnimatedFocusLight>
     }
   }
 
+  /// Advances to the next target whose widget is currently available,
+  /// skipping targets that cannot be found (conditionally rendered, removed
+  /// after an interaction, scrolled off-screen, etc.). The tutorial finishes
+  /// only when no remaining target is available (#218, #223, #199).
+  void skipToNextAvailable() {
+    var index = nextIndex;
+    while (index < widget.targets.length) {
+      if (index == _currentFocus) {
+        index++;
+        continue;
+      }
+
+      TargetPosition? position;
+      try {
+        position = getTargetCurrent(
+          widget.targets[index],
+          rootOverlay: widget.rootOverlay,
+        );
+      } on NotFoundTargetException {
+        position = null;
+      }
+
+      if (position != null) {
+        nextIndex = index;
+        _goToFocus(index);
+        return;
+      }
+      index++;
+    }
+    _finish();
+  }
+
   void _finish() {
     safeSetState(() => _currentFocus = 0);
-    widget.finish!();
+    widget.finish?.call();
   }
 
   Widget _getLightPaint(TargetFocus targetFocus) {
@@ -407,7 +446,6 @@ class AnimatedPulseFocusLightState extends AnimatedFocusLightState {
   late Animation _tweenPulse;
 
   bool _finishFocus = false;
-  bool _initReverse = false;
 
   get left => (_targetPosition?.offset.dx ?? 0) - _getPaddingFocus() * 2;
 
@@ -495,8 +533,13 @@ class AnimatedPulseFocusLightState extends AnimatedFocusLightState {
   @override
   Future<void> _revertAnimation() async {
     await super._revertAnimation();
-    _initReverse = true;
-    return _controllerPulse.reverse(from: _controllerPulse.value);
+    // Stop the pulse loop immediately and play the unfocus animation right
+    // away. Previously the reverse waited for the pulse controller to finish
+    // reversing, which delayed next()/finish() by up to a full pulse cycle
+    // (issue #235).
+    _finishFocus = false;
+    _controllerPulse.stop();
+    return _controller.reverse();
   }
 
   @override
@@ -512,11 +555,10 @@ class AnimatedPulseFocusLightState extends AnimatedFocusLightState {
 
       widget.focus?.call(_targetFocus);
 
-      _controllerPulse.forward();
+      _controllerPulse.forward(from: 0.0);
     }
     if (status == AnimationStatus.dismissed) {
       _finishFocus = false;
-      _initReverse = false;
       _goToFocus(nextIndex);
     }
 
@@ -531,11 +573,8 @@ class AnimatedPulseFocusLightState extends AnimatedFocusLightState {
     }
 
     if (status == AnimationStatus.dismissed) {
-      if (_initReverse) {
-        safeSetState(() => _finishFocus = false);
-        _controller.reverse();
-      } else if (_finishFocus) {
-        _controllerPulse.forward();
+      if (_finishFocus) {
+        _controllerPulse.forward(from: 0.0);
       }
     }
   }
