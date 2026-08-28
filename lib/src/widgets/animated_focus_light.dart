@@ -555,7 +555,7 @@ class AnimatedPulseFocusLightState extends AnimatedFocusLightState {
 
       widget.focus?.call(_targetFocus);
 
-      _controllerPulse.forward();
+      _controllerPulse.forward(from: 0.0);
     }
     if (status == AnimationStatus.dismissed) {
       _finishFocus = false;
@@ -574,7 +574,7 @@ class AnimatedPulseFocusLightState extends AnimatedFocusLightState {
 
     if (status == AnimationStatus.dismissed) {
       if (_finishFocus) {
-        _controllerPulse.forward();
+        _controllerPulse.forward(from: 0.0);
       }
     }
   }
