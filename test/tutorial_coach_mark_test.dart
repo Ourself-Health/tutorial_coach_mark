@@ -156,6 +156,11 @@ void main() {
         controller!.next();
         await _pumpAdvance(tester, focus: focus, unfocus: unfocus);
 
+        // ignore: avoid_print
+        print('DIAG texts: ${tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList()}');
+        // ignore: avoid_print
+        print('DIAG isShowing: ${tutorial.isShowing}');
+
         expect(find.text('content-1'), findsOneWidget,
             reason: 'rapid taps must not skip to target 2');
         expect(find.text('content-2'), findsNothing);
