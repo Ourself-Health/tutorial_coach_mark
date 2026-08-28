@@ -165,6 +165,8 @@ void main() {
             tester.state<TutorialCoachMarkWidgetState>(find.byType(TutorialCoachMarkWidget));
         // ignore: avoid_print
         print('DIAG tcm: current=${tcmState.currentTarget?.identify} showContent=${tcmState.showContent}');
+        // ignore: avoid_print
+        print('DIAG exception: ${tester.takeException()}');
 
         expect(find.text('content-1'), findsOneWidget,
             reason: 'rapid taps must not skip to target 2');
