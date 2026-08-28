@@ -167,6 +167,14 @@ void main() {
         print('DIAG tcm: current=${tcmState.currentTarget?.identify} showContent=${tcmState.showContent}');
         // ignore: avoid_print
         print('DIAG exception: ${tester.takeException()}');
+        for (var i = 0; i < 10; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        final tcmState2 =
+            tester.state<TutorialCoachMarkWidgetState>(find.byType(TutorialCoachMarkWidget));
+        // ignore: avoid_print
+        print('DIAG after 10x100ms: current=${tcmState2.currentTarget?.identify} '
+            'showContent=${tcmState2.showContent} texts=${tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList()}');
 
         expect(find.text('content-1'), findsOneWidget,
             reason: 'rapid taps must not skip to target 2');
