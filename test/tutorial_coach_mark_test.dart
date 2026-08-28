@@ -428,8 +428,11 @@ Future<void> _showAndFocus(
   );
 
   await tester.tap(find.text('start'));
-  await tester.pump(); // trigger show() + postFrame
-  await tester.pump(); // overlay inserted, initState schedules _runFocus
+  // NOTE: pump(Duration.zero) is required, not pump() — the package uses
+  // Future.delayed(Duration.zero) timers (postFrame, _runFocus) which only
+  // fire when the fake clock elapses.
+  await tester.pump(Duration.zero); // trigger show() + postFrame
+  await tester.pump(Duration.zero); // overlay inserted, initState schedules _runFocus
   await tester.pump(focus + const Duration(milliseconds: 50)); // focus in
   await tester.pump(); // build the focused content
 }
