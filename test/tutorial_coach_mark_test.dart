@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tutorial_coach_mark/src/widgets/tutorial_coach_mark_widget.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 /// Widget tests for the core tutorial flows.
@@ -160,6 +161,10 @@ void main() {
         print('DIAG texts: ${tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList()}');
         // ignore: avoid_print
         print('DIAG isShowing: ${tutorial.isShowing}');
+        final tcmState =
+            tester.state<TutorialCoachMarkWidgetState>(find.byType(TutorialCoachMarkWidget));
+        // ignore: avoid_print
+        print('DIAG tcm: current=${tcmState.currentTarget?.identify} showContent=${tcmState.showContent}');
 
         expect(find.text('content-1'), findsOneWidget,
             reason: 'rapid taps must not skip to target 2');
