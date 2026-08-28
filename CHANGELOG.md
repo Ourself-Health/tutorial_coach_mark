@@ -1,4 +1,4 @@
-# next
+# 1.3.4
 - Fix: `next()`/`finish()` no longer waits for the pulse animation to end before playing the unfocus animation. [#235](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/235)
 - Fix: rapid taps on the overlay or target no longer skip multiple steps. [#175](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/175) [#183](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/183)
 - Fix: the tutorial no longer aborts when a target cannot be found (conditional widgets, targets removed after a tap, scrolled off-screen). It now skips to the next available target and only finishes when none remain. [#218](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/218) [#223](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/223) [#199](https://github.com/RafaelBarbosatec/tutorial_coach_mark/issues/199)
