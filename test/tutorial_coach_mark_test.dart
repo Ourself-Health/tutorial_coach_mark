@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tutorial_coach_mark/src/widgets/tutorial_coach_mark_widget.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 /// Widget tests for the core tutorial flows.
@@ -156,25 +155,6 @@ void main() {
         controller!.next();
         controller!.next();
         await _pumpAdvance(tester, focus: focus, unfocus: unfocus);
-
-        // ignore: avoid_print
-        print('DIAG texts: ${tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList()}');
-        // ignore: avoid_print
-        print('DIAG isShowing: ${tutorial.isShowing}');
-        final tcmState =
-            tester.state<TutorialCoachMarkWidgetState>(find.byType(TutorialCoachMarkWidget));
-        // ignore: avoid_print
-        print('DIAG tcm: current=${tcmState.currentTarget?.identify} showContent=${tcmState.showContent}');
-        // ignore: avoid_print
-        print('DIAG exception: ${tester.takeException()}');
-        for (var i = 0; i < 10; i++) {
-          await tester.pump(const Duration(milliseconds: 100));
-        }
-        final tcmState2 =
-            tester.state<TutorialCoachMarkWidgetState>(find.byType(TutorialCoachMarkWidget));
-        // ignore: avoid_print
-        print('DIAG after 10x100ms: current=${tcmState2.currentTarget?.identify} '
-            'showContent=${tcmState2.showContent} texts=${tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList()}');
 
         expect(find.text('content-1'), findsOneWidget,
             reason: 'rapid taps must not skip to target 2');
@@ -457,17 +437,27 @@ Future<void> _showAndFocus(
   await tester.pump(); // build the focused content
 }
 
-/// Pumps through one advance (unfocus + focus) using separate frames so the
-/// chained async state transitions (reverse -> goToFocus -> forward) settle.
+/// Pumps through one advance (unfocus + focus) using a generous number of
+/// frames: the transition is a long async chain (tap handler -> revert ->
+/// reverse completes -> goToFocus -> runFocus -> forward completes) and
+/// every `await` boundary needs its own frame before the next animation
+/// tick is processed.
 Future<void> _pumpAdvance(
   WidgetTester tester, {
   required Duration focus,
   required Duration unfocus,
 }) async {
-  await tester.pump(unfocus); // unfocus (reverse) completes
-  await tester.pump(focus); // next focus animation
-  await tester.pump(focus); // focus completes
-  await tester.pump(); // build the focused content
+  // Reverse (unfocus) phase: let the reverse complete and the next
+  // `_runFocus` start.
+  for (var i = 0; i < 4; i++) {
+    await tester.pump(unfocus);
+  }
+  // Forward (focus) phase: let the new focus animation complete.
+  for (var i = 0; i < 4; i++) {
+    await tester.pump(focus);
+  }
+  // Build the focused content.
+  await tester.pump();
 }
 
 /// Disposes the whole tree so tickers/timers don't leak between tests.
